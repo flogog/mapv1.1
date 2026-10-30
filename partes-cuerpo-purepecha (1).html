@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Las partes del cuerpo en p'urhepecha</title>
+<style>
+  :root{
+    --paper:#f6efe3; --ink:#2b2420; --muted:#6f6357;
+    --accent:#b5543a; --accent-2:#2f6f6a; --gold:#c9933a;
+    --card:#fffaf1; --line:#e3d7c4; --good:#2f7d4f; --bad:#b23b3b;
+    --shadow:0 2px 10px rgba(60,40,20,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper); color:var(--ink);
+    line-height:1.5; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:16px;}
+  header.app{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
+  header.app h1{font-size:1.15rem; margin:0; letter-spacing:.2px;}
+  header.app .sub{font-size:.78rem; color:var(--muted);}
+  .score-chip{background:var(--card); border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:.85rem; white-space:nowrap; box-shadow:var(--shadow);}
+  .score-chip b{color:var(--accent);}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:var(--shadow); margin-bottom:14px;}
+  h2{font-size:1.05rem; margin:.1rem 0 .4rem;}
+  p.lead{color:var(--muted); margin:.2rem 0 1rem; font-size:.95rem;}
+  .btn{appearance:none; border:none; cursor:pointer; font:inherit; font-weight:600;
+    background:var(--accent); color:#fff; padding:11px 18px; border-radius:12px; box-shadow:var(--shadow);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--accent);}
+  .btn.sec{background:var(--accent-2);}
+  .btn.small{padding:7px 12px; font-size:.85rem;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .spacer{flex:1}
+  /* scene map */
+  .map{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px;}
+  .scene-tile{text-align:left; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; position:relative; transition:transform .08s;}
+  .scene-tile:hover{transform:translateY(-2px);}
+  .scene-tile.locked{opacity:.5; cursor:not-allowed;}
+  .scene-tile .num{font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;}
+  .scene-tile .nm{font-weight:700; margin:2px 0;}
+  .scene-tile .cnt{font-size:.78rem; color:var(--muted);}
+  .stars{color:var(--gold); letter-spacing:2px; font-size:.95rem; margin-top:4px; min-height:1.1em;}
+  .lockicon{position:absolute; top:12px; right:12px; font-size:.9rem;}
+  /* phase badges */
+  .phases{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
+  .pill{font-size:.72rem; padding:5px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); background:#fff;}
+  .pill.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .pill.done{background:var(--accent-2); color:#fff; border-color:var(--accent-2);}
+  /* figure */
+  .figbox{position:relative; width:100%; max-width:440px; margin:0 auto; background:#fffdf8; border:1px dashed var(--line); border-radius:14px;}
+  svg.fig{display:block; width:100%; height:auto; touch-action:manipulation;}
+  .sil{fill:#f0e4d0; stroke:#d9c7a9; stroke-width:2;}
+  .hair{fill:#cdb48e; stroke:none;}
+  .tongue{fill:#e6a4a0; stroke:#cf8783; stroke-width:1.5;}
+  .line{fill:none; stroke:#b9a988; stroke-width:2.5; stroke-linecap:round;}
+  .leader{stroke:#d9c7a9; stroke-width:1.5; stroke-dasharray:3 3;}
+  .cap{font-size:11px; fill:var(--muted);}
+  .pt{cursor:pointer;}
+  .pt circle{fill:#fff; stroke:var(--accent); stroke-width:2.5; transition:fill .1s, stroke .1s;}
+  .pt text{font-size:13px; font-weight:700; fill:var(--accent); text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+  .pt.visited circle{fill:var(--accent-2); stroke:var(--accent-2);}
+  .pt.visited text{fill:#fff;}
+  .pt.correct circle{fill:var(--good); stroke:var(--good);}
+  .pt.correct text{fill:#fff;}
+  .pt.wrong circle{fill:var(--bad); stroke:var(--bad);}
+  .pt.target circle{stroke-dasharray:4 3;}
+  .pt:focus{outline:none;}
+  .pt:focus circle{stroke-width:4;}
+  /* popup label */
+  .tip{position:absolute; transform:translate(-50%,-115%); background:var(--ink); color:#fff; padding:8px 12px; border-radius:10px; font-size:.9rem; pointer-events:none; white-space:nowrap; box-shadow:var(--shadow); z-index:5;}
+  .tip .es{opacity:.75; font-size:.78rem; display:block;}
+  .tip .pur{font-weight:700; font-size:1rem;}
+  /* quiz */
+  .prompt{font-size:1.25rem; font-weight:700; text-align:center; margin:6px 0 2px;}
+  .prompt .tag{display:block; font-size:.72rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;}
+  @media (max-width:420px){ .opts{grid-template-columns:1fr;} }
+  .opt{appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); font:inherit; font-weight:600; padding:14px; border-radius:12px; cursor:pointer; text-align:center;}
+  .opt:hover{border-color:var(--accent);}
+  .opt.correct{background:var(--good); color:#fff; border-color:var(--good);}
+  .opt.wrong{background:var(--bad); color:#fff; border-color:var(--bad);}
+  .opt:disabled{cursor:default;}
+  .progress{height:8px; background:#eaddc9; border-radius:999px; overflow:hidden; margin:10px 0;}
+  .progress > i{display:block; height:100%; background:var(--accent-2); width:0; transition:width .25s;}
+  .feedback{text-align:center; font-weight:600; min-height:1.4em; margin-top:10px;}
+  .feedback.good{color:var(--good);} .feedback.bad{color:var(--bad);}
+  .count{font-size:.8rem; color:var(--muted); text-align:center;}
+  .final{text-align:center;}
+  .final .big{font-size:2rem; color:var(--accent); font-weight:800;}
+  .note{font-size:.78rem; color:var(--muted); border-top:1px dashed var(--line); margin-top:14px; padding-top:10px;}
+  footer{font-size:.72rem; color:var(--muted); text-align:center; padding:18px 0;}
+  .hidden{display:none !important;}
+  /* credits + pronunciation */
+  .credits{border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:14px 0; background:#fffdf8;}
+  .collab-label{font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);}
+  .collab-names{font-size:1.1rem; font-weight:700; color:var(--ink); margin-top:2px; line-height:1.3;}
+  .collab-sub{font-size:.8rem; color:var(--muted); margin-top:2px;}
+  .author{font-size:.75rem; color:var(--muted); margin-top:10px; line-height:1.5;}
+  .author a{color:var(--accent); text-decoration:none;}
+  .pron{border:1px solid var(--line); border-radius:12px; padding:10px 14px; margin:14px 0; background:#fff;}
+  .pron summary{cursor:pointer; font-weight:600; color:var(--accent-2);}
+  .pron ul{margin:10px 0 6px; padding-left:18px;}
+  .pron li{margin-bottom:8px; font-size:.9rem; line-height:1.45;}
+  .pron-foot{font-size:.76rem; color:var(--muted); border-top:1px dashed var(--line); padding-top:8px; margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div>
+      <h1>Las partes del cuerpo en p'urhepecha</h1>
+      <div class="sub">Juego de aprendizaje &middot; explora &rarr; relaciona &rarr; señala</div>
+    </div>
+    <div class="score-chip">Puntos: <b id="score">0</b></div>
+  </header>
+
+  <!-- HOME / MAP -->
+  <section id="home" class="card">
+    <h2>Elige una zona del cuerpo</h2>
+    <p class="lead">Cada zona tiene tres pasos: primero <b>exploras</b> la figura, luego <b>relacionas</b> cada palabra con su significado, y al final <b>señalas</b> la parte al leer la palabra en p'urhepecha. Completa una zona para abrir la siguiente.</p>
+
+    <div class="credits">
+      <div class="collab-label">Colaboración y validación lingüística</div>
+      <div class="collab-names">Mtra. Rosa Guillermina Ascencio &middot; Mtro. Edgar Alejandre Pérez</div>
+      <div class="collab-sub">Hablantes de p'urhepecha &mdash; revisión y validación de la lengua</div>
+      <div class="author">Diseño e idea: Dra. Lilia Sulema Bórquez Morales &middot; <a href="mailto:lilia.borquez@colmich.edu.mx">lilia.borquez@colmich.edu.mx</a><br>Programación asistida por IA (Claude, Opus 4.8)</div>
+    </div>
+
+    <details class="pron" open>
+      <summary>Antes de jugar: cómo se pronuncia</summary>
+      <ul>
+        <li>Cuando veas <b>mp</b>, <b>nt</b> o <b>nk</b>, el segundo sonido se hace más suave: <b>mp</b> suena como &ldquo;mb&rdquo;, <b>nt</b> como &ldquo;nd&rdquo; y <b>nk</b> como &ldquo;ng&rdquo;. Por ejemplo, <i>Sumpa</i> se oye &ldquo;sumba&rdquo;.</li>
+        <li>El apóstrofo (<b>&rsquo;</b>) después de una consonante indica que antes de esa consonante se pronuncia una <b>&ldquo;j&rdquo;</b>. Por ejemplo, <i>Tsikat'akua</i> se pronuncia &ldquo;tsikajtakua&rdquo;.</li>
+      </ul>
+      <div class="pron-foot">La pronunciación la modela tu maestra; esto es solo un recordatorio.</div>
+    </details>
+
+    <div class="map" id="map"></div>
+    <div class="row" style="margin-top:14px;">
+      <div class="spacer"></div>
+      <button class="btn ghost small" id="resetBtn">Reiniciar progreso</button>
+    </div>
+    <div class="note">Material en validación. La ortografía fue revisada por hablantes de p'urhepecha; la ubicación de los puntos en las figuras es aproximada y puede ajustarse. No incluye audio: la pronunciación la modela la maestra.</div>
+  </section>
+
+  <!-- SCENE PLAYER -->
+  <section id="player" class="card hidden">
+    <div class="row">
+      <button class="btn ghost small" id="backBtn">&larr; Zonas</button>
+      <div class="spacer"></div>
+      <div class="sub" id="sceneTitle"></div>
+    </div>
+    <div class="phases" id="phases">
+      <span class="pill" data-ph="0">1 · Explora</span>
+      <span class="pill" data-ph="1">2 · Relaciona</span>
+      <span class="pill" data-ph="2">3 · Señala</span>
+    </div>
+
+    <!-- PHASE: EXPLORA -->
+    <div id="ph-explore" class="phase hidden">
+      <h2>Explora</h2>
+      <p class="lead">Toca cada punto para ver el nombre en español y en p'urhepecha. Cuando los veas todos, pasa al siguiente paso.</p>
+      <div class="figbox" id="exploreFig"></div>
+      <div class="count" id="exploreCount"></div>
+      <div class="row" style="margin-top:12px;">
+        <div class="spacer"></div>
+        <button class="btn" id="toMatch" disabled>Siguiente: Relaciona &rarr;</button>
+      </div>
+    </div>
+
+    <!-- PHASE: RELACIONA -->
+    <div id="ph-match" class="phase hidden">
+      <h2>Relaciona</h2>
+      <div class="progress"><i id="matchBar"></i></div>
+      <div class="prompt" id="matchPrompt"></div>
+      <div class="opts" id="matchOpts"></div>
+      <div class="feedback" id="matchFb">&nbsp;</div>
+    </div>
+
+    <!-- PHASE: SEÑALA -->
+    <div id="ph-point" class="phase hidden">
+      <h2>Señala</h2>
+      <p class="lead">Toca en la figura la parte que corresponde a la palabra en p'urhepecha.</p>
+      <div class="progress"><i id="pointBar"></i></div>
+      <div class="prompt" id="pointPrompt"></div>
+      <div class="figbox" id="pointFig"></div>
+      <div class="feedback" id="pointFb">&nbsp;</div>
+    </div>
+
+    <!-- SCENE DONE -->
+    <div id="ph-done" class="phase hidden final">
+      <h2>¡Zona completa!</h2>
+      <div class="stars" id="doneStars" style="font-size:1.6rem;"></div>
+      <p class="lead" id="doneMsg"></p>
+      <div class="row"><div class="spacer"></div>
+        <button class="btn ghost small" id="replayBtn">Repetir zona</button>
+        <button class="btn" id="nextBtn">Continuar &rarr;</button>
+        <div class="spacer"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALL DONE -->
+  <section id="allDone" class="card final hidden">
+    <h2>¡Terminaste todas las zonas!</h2>
+    <div class="big" id="finalScore"></div>
+    <p class="lead">Aprendiste las 34 partes del cuerpo en p'urhepecha. Puedes repetir cualquier zona para practicar la pronunciación con tu maestra.</p>
+    <div class="row"><div class="spacer"></div>
+      <button class="btn" id="homeBtn">Volver a las zonas</button>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <footer>Material de aprendizaje de p'urhepecha &middot; v1.0 &middot; octubre 2026</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- DATA: 5 escenas, ortografía reconciliada con la canción ---------- */
+const SCENES = [
+  {
+    id:1, name:"Rostro", view:"0 0 440 440",
+    art:`
+      <ellipse cx="160" cy="215" rx="118" ry="150" class="sil"/>
+      <ellipse cx="50" cy="220" rx="20" ry="30" class="sil"/>
+      <ellipse cx="270" cy="220" rx="20" ry="30" class="sil"/>
+      <path d="M70 120 Q160 55 250 120" class="line"/>
+      <circle cx="120" cy="192" r="11" class="line"/>
+      <circle cx="205" cy="192" r="11" class="line"/>
+      <path d="M160 205 L160 243 Q152 250 146 246" class="line"/>
+      <path d="M118 288 Q160 308 203 288" class="line"/>
+      <line x1="300" y1="300" x2="232" y2="285" class="leader"/>
+      <ellipse cx="370" cy="305" rx="56" ry="42" class="sil"/>
+      <path d="M322 296 Q370 280 418 296" class="line"/>
+      <ellipse cx="370" cy="326" rx="27" ry="15" class="tongue"/>
+      <text x="370" y="366" class="cap" text-anchor="middle">boca abierta</text>
+    `,
+    parts:[
+      {es:"frente", pur:"Tsérhukua", x:160, y:128},
+      {es:"ceja", pur:"Sumpa", x:112, y:162},
+      {es:"pestaña", pur:"Tsitumpa", x:140, y:178},
+      {es:"ojo", pur:"Eskua", x:112, y:195},
+      {es:"oreja", pur:"Kutsikua", x:50, y:220},
+      {es:"nariz", pur:"Úrhi", x:160, y:228},
+      {es:"boca", pur:"Pechumikua", x:160, y:292},
+      {es:"labio", pur:"Taianterakua", x:148, y:312},
+      {es:"diente", pur:"Sïni", x:372, y:290},
+      {es:"lengua", pur:"K'atampa", x:370, y:326}
+    ]
+  },
+  {
+    id:2, name:"Cabeza y cuello", view:"0 0 400 460",
+    art:`
+      <path d="M110 440 Q110 365 160 352 L240 352 Q290 365 290 440 Z" class="sil"/>
+      <rect x="168" y="298" width="64" height="70" rx="22" class="sil"/>
+      <ellipse cx="200" cy="200" rx="112" ry="132" class="sil"/>
+      <path d="M90 155 Q200 58 310 155 Q302 108 200 96 Q98 108 90 155 Z" class="hair"/>
+      <circle cx="162" cy="200" r="9" class="line"/>
+      <circle cx="238" cy="200" r="9" class="line"/>
+      <path d="M200 212 L200 244 Q193 250 187 246" class="line"/>
+      <path d="M170 270 Q200 282 230 270" class="line"/>
+    `,
+    parts:[
+      {es:"cabeza", pur:"Ép'u", x:200, y:86},
+      {es:"cabello", pur:"Jauirhi", x:118, y:128},
+      {es:"bigote", pur:"Tsisïmukua", x:200, y:258},
+      {es:"barba", pur:"Tsïnharhikua", x:150, y:286},
+      {es:"mentón", pur:"Irhámukua", x:200, y:312},
+      {es:"barbilla", pur:"Irhanterakua", x:200, y:338},
+      {es:"cuello", pur:"Ananchakua", x:200, y:362}
+    ]
+  },
+  {
+    id:3, name:"Tronco", view:"0 0 480 460",
+    art:`
+      <path d="M78 130 Q88 104 140 104 Q192 104 202 130 L208 330 Q140 352 72 330 Z" class="sil"/>
+      <path d="M72 128 Q140 150 208 128" class="line"/>
+      <text x="140" y="372" class="cap" text-anchor="middle">de frente</text>
+      <path d="M298 130 Q308 104 360 104 Q412 104 422 130 L428 335 Q360 356 292 335 Z" class="sil"/>
+      <line x1="360" y1="140" x2="360" y2="300" class="line"/>
+      <text x="360" y="376" class="cap" text-anchor="middle">de espalda</text>
+    `,
+    parts:[
+      {es:"hombro", pur:"Kéxukua", x:92, y:126},
+      {es:"pecho", pur:"Terunhikua", x:140, y:170},
+      {es:"panza", pur:"Sïturhi", x:150, y:242},
+      {es:"ombligo", pur:"Tupu", x:122, y:280},
+      {es:"cintura", pur:"Sirhitskua", x:148, y:316},
+      {es:"espalda", pur:"Péxu", x:360, y:196},
+      {es:"pompas", pur:"Charhasï", x:360, y:320}
+    ]
+  },
+  {
+    id:4, name:"Brazos y manos", view:"0 0 400 470",
+    art:`
+      <path d="M150 70 L128 210 L205 288 L250 352" fill="none" stroke="#f0e4d0" stroke-width="42" stroke-linecap="round"/>
+      <path d="M150 70 L128 210 L205 288 L250 352" fill="none" stroke="#d9c7a9" stroke-width="2.5"/>
+      <ellipse cx="258" cy="372" rx="34" ry="30" class="sil"/>
+      <line x1="248" y1="348" x2="240" y2="410" class="line"/>
+      <line x1="262" y1="348" x2="262" y2="416" class="line"/>
+      <line x1="276" y1="350" x2="284" y2="408" class="line"/>
+    `,
+    parts:[
+      {es:"brazo", pur:"Ióxurhakua", x:138, y:150},
+      {es:"codo", pur:"Kukuxukua", x:126, y:214},
+      {es:"mano", pur:"Ják'i", x:240, y:355},
+      {es:"dedo de la mano", pur:"Munchuk'urhakua", x:250, y:414},
+      {es:"uña", pur:"Tek'i", x:285, y:405}
+    ]
+  },
+  {
+    id:5, name:"Piernas y pies", view:"0 0 360 480",
+    art:`
+      <path d="M170 60 L170 250 L158 390" fill="none" stroke="#f0e4d0" stroke-width="54" stroke-linecap="round"/>
+      <path d="M170 60 L170 250 L158 390" fill="none" stroke="#d9c7a9" stroke-width="2.5"/>
+      <path d="M150 395 Q150 430 170 432 L250 432 Q262 430 258 416 L175 400 Z" class="sil"/>
+      <line x1="238" y1="420" x2="236" y2="440" class="line"/>
+    `,
+    parts:[
+      {es:"pierna", pur:"Tsikat'akua", x:170, y:165},
+      {es:"rodilla", pur:"Jurhintskua", x:170, y:250},
+      {es:"tobillo", pur:"Itukua jatakua", x:160, y:378},
+      {es:"pie", pur:"Jantsiri", x:200, y:418},
+      {es:"dedo del pie", pur:"Munchunturhakua", x:240, y:424}
+    ]
+  }
+];
+
+/* ---------- STATE ---------- */
+const SAVE_KEY = "purhe_body_v1";
+let state = { score:0, scenes:{} }; // scenes[id] = {stars, done}
+let cur = null;      // current scene object
+let curIdx = -1;     // index in SCENES
+let phase = 0;
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if(s && typeof s==="object"){ state = s; } }catch(e){}
+  if(!state.scenes) state.scenes = {};
+  if(typeof state.score!=="number") state.score = 0;
+}
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){} }
+
+/* ---------- HELPERS ---------- */
+const $ = id => document.getElementById(id);
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function setScore(n){ state.score = n; $("score").textContent = n; save(); }
+function addScore(n){ setScore(state.score + n); }
+function unlocked(i){ if(i===0) return true; const prev = SCENES[i-1]; return !!(state.scenes[prev.id] && state.scenes[prev.id].done); }
+function starStr(n){ return "★★★☆☆☆".slice(0,0), "★".repeat(n) + "☆".repeat(3-n); }
+
+/* ---------- FIGURE RENDER ---------- */
+function buildFigure(container, scene, mode, onClick){
+  // mode: "explore" (numbered, click reveals) or "point" (blank targets, click to answer)
+  const vb = scene.view.split(" ").map(Number);
+  container.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox", scene.view);
+  svg.setAttribute("class","fig");
+  svg.innerHTML = scene.art;
+  scene.parts.forEach((p, i) => {
+    const g = document.createElementNS(NS,"g");
+    g.setAttribute("class","pt");
+    g.setAttribute("tabindex","0");
+    g.setAttribute("role","button");
+    g.setAttribute("data-i", i);
+    g.setAttribute("aria-label", mode==="explore" ? ("punto "+(i+1)) : p.pur);
+    const c = document.createElementNS(NS,"circle");
+    c.setAttribute("cx", p.x); c.setAttribute("cy", p.y); c.setAttribute("r", 15);
+    g.appendChild(c);
+    if(mode==="explore"){
+      const t = document.createElementNS(NS,"text");
+      t.setAttribute("x", p.x); t.setAttribute("y", p.y);
+      t.textContent = (i+1);
+      g.appendChild(t);
+    }
+    const handler = (ev)=>{ ev.preventDefault(); onClick(i, g); };
+    g.addEventListener("click", handler);
+    g.addEventListener("keydown", (ev)=>{ if(ev.key==="Enter"||ev.key===" "){ handler(ev); } });
+    svg.appendChild(g);
+  });
+  container.appendChild(svg);
+  return svg;
+}
+
+function showTip(container, scene, p){
+  const old = container.querySelector(".tip"); if(old) old.remove();
+  const rect = container.getBoundingClientRect();
+  const vb = scene.view.split(" ").map(Number);
+  const px = rect.width * (p.x - vb[0]) / vb[2];
+  const py = rect.height * (p.y - vb[1]) / vb[3];
+  const tip = document.createElement("div");
+  tip.className = "tip";
+  tip.style.left = px + "px"; tip.style.top = py + "px";
+  tip.innerHTML = '<span class="pur">'+p.pur+'</span><span class="es">'+p.es+'</span>';
+  container.appendChild(tip);
+  clearTimeout(showTip._t);
+  showTip._t = setTimeout(()=>{ if(tip.parentNode) tip.remove(); }, 2600);
+}
+
+/* ---------- PHASE 1: EXPLORA ---------- */
+let exploreVisited = new Set();
+function startExplore(){
+  phase = 0; markPhases();
+  showPhase("ph-explore");
+  exploreVisited = new Set();
+  const fig = $("exploreFig");
+  const svg = buildFigure(fig, cur, "explore", (i, g)=>{
+    const p = cur.parts[i];
+    showTip(fig, cur, p);
+    g.classList.add("visited");
+    exploreVisited.add(i);
+    updateExploreCount();
+  });
+  updateExploreCount();
+}
+function updateExploreCount(){
+  const total = cur.parts.length;
+  $("exploreCount").textContent = exploreVisited.size + " / " + total + " partes vistas";
+  $("toMatch").disabled = exploreVisited.size < total;
+}
+
+/* ---------- PHASE 2: RELACIONA ---------- */
+let matchQueue = [], matchErrors = 0, matchDoneCount = 0, matchTotal = 0;
+function startMatch(){
+  phase = 1; markPhases();
+  showPhase("ph-match");
+  matchErrors = 0; matchDoneCount = 0;
+  matchTotal = cur.parts.length;
+  matchQueue = shuffle(cur.parts.map((p,i)=>({i, tries:0})));
+  $("matchFb").innerHTML = "&nbsp;"; $("matchFb").className="feedback";
+  nextMatch();
+}
+function nextMatch(){
+  updateBar("matchBar", matchDoneCount, matchTotal);
+  if(matchQueue.length===0){ startPoint(); return; }
+  const item = matchQueue[0];
+  const p = cur.parts[item.i];
+  const askPur = (item.i % 2 === 0); // alternar dirección
+  const promptWord = askPur ? p.pur : p.es;
+  const tag = askPur ? "¿Qué significa en español?" : "¿Cómo se dice en p'urhepecha?";
+  $("matchPrompt").innerHTML = '<span class="tag">'+tag+'</span>'+promptWord;
+  // opciones
+  const pool = shuffle(cur.parts.filter((_,k)=>k!==item.i)).slice(0,3);
+  const options = shuffle([p, ...pool]);
+  const box = $("matchOpts"); box.innerHTML="";
+  options.forEach(op=>{
+    const b = document.createElement("button");
+    b.className="opt";
+    b.textContent = askPur ? op.es : op.pur;
+    b.addEventListener("click", ()=> answerMatch(b, op===p, item, options, p, askPur));
+    box.appendChild(b);
+  });
+}
+function answerMatch(btn, correct, item, options, p, askPur){
+  const buttons = Array.from($("matchOpts").children);
+  buttons.forEach(b=> b.disabled=true);
+  const fb = $("matchFb");
+  if(correct){
+    btn.classList.add("correct");
+    const gain = item.tries===0 ? 10 : 4;
+    addScore(gain);
+    fb.textContent = "¡Correcto! +" + gain; fb.className="feedback good";
+    matchQueue.shift();
+    matchDoneCount++;
+    setTimeout(nextMatch, 750);
+  }else{
+    btn.classList.add("wrong");
+    matchErrors++; item.tries++;
+    // marcar la correcta
+    buttons.forEach(b=>{
+      const label = b.textContent;
+      const want = askPur ? p.es : p.pur;
+      if(label===want) b.classList.add("correct");
+    });
+    fb.textContent = "Inténtalo de nuevo"; fb.className="feedback bad";
+    // reencolar al final
+    matchQueue.push(matchQueue.shift());
+    setTimeout(nextMatch, 1100);
+  }
+}
+
+/* ---------- PHASE 3: SEÑALA ---------- */
+let pointQueue = [], pointErrors = 0, pointDone = 0, pointTotal = 0, pointSvg = null;
+function startPoint(){
+  phase = 2; markPhases();
+  showPhase("ph-point");
+  pointErrors = 0; pointDone = 0;
+  pointTotal = cur.parts.length;
+  pointQueue = shuffle(cur.parts.map((p,i)=>({i, tries:0})));
+  $("pointFb").innerHTML="&nbsp;"; $("pointFb").className="feedback";
+  pointSvg = buildFigure($("pointFig"), cur, "point", onPointClick);
+  nextPoint();
+}
+function nextPoint(){
+  updateBar("pointBar", pointDone, pointTotal);
+  clearPtStyles();
+  if(pointQueue.length===0){ finishScene(); return; }
+  const p = cur.parts[pointQueue[0].i];
+  $("pointPrompt").innerHTML = '<span class="tag">Señala en la figura</span>'+p.pur;
+}
+function clearPtStyles(){
+  if(!pointSvg) return;
+  pointSvg.querySelectorAll(".pt").forEach(g=> g.classList.remove("correct","wrong","target"));
+}
+function onPointClick(i, g){
+  if(pointQueue.length===0) return;
+  const item = pointQueue[0];
+  const fb = $("pointFb");
+  if(i===item.i){
+    g.classList.add("correct");
+    const gain = item.tries===0 ? 10 : 4;
+    addScore(gain);
+    fb.textContent = "¡Correcto! +" + gain; fb.className="feedback good";
+    pointQueue.shift(); pointDone++;
+    setTimeout(nextPoint, 800);
+  }else{
+    g.classList.add("wrong");
+    pointErrors++; item.tries++;
+    fb.textContent = "Esa no es. Intenta otra vez"; fb.className="feedback bad";
+    if(item.tries>=2){
+      // mostrar la correcta y avanzar
+      const correctG = pointSvg.querySelector('.pt[data-i="'+item.i+'"]');
+      if(correctG) correctG.classList.add("target","correct");
+      fb.textContent = "Esta es: " + cur.parts[item.i].pur; fb.className="feedback";
+      pointQueue.push(pointQueue.shift());
+      setTimeout(nextPoint, 1400);
+    }else{
+      setTimeout(()=>{ g.classList.remove("wrong"); fb.innerHTML="&nbsp;"; }, 900);
+    }
+  }
+}
+
+/* ---------- SCENE FLOW ---------- */
+function updateBar(id, done, total){ $(id).style.width = Math.round(100*done/total) + "%"; }
+function markPhases(){
+  document.querySelectorAll("#phases .pill").forEach(el=>{
+    const ph = Number(el.dataset.ph);
+    el.classList.toggle("active", ph===phase);
+    el.classList.toggle("done", ph<phase);
+  });
+}
+function showPhase(whichId){
+  ["ph-explore","ph-match","ph-point","ph-done"].forEach(x=> $(x).classList.add("hidden"));
+  $(whichId.replace("ph-","ph-")).classList.remove("hidden");
+}
+function finishScene(){
+  const errors = matchErrors + pointErrors;
+  let stars = errors===0 ? 3 : (errors<=2 ? 2 : 1);
+  const rec = state.scenes[cur.id] || {stars:0, done:false};
+  rec.done = true; rec.stars = Math.max(rec.stars, stars);
+  state.scenes[cur.id] = rec; save();
+  phase = 2; markPhases();
+  showPhase("ph-done");
+  $("doneStars").textContent = "★".repeat(stars) + "☆".repeat(3-stars);
+  $("doneMsg").textContent = errors===0
+    ? "Sin errores. Excelente memoria."
+    : ("Terminaste con " + errors + (errors===1?" error.":" errores. Puedes repetir para mejorar."));
+}
+
+/* ---------- NAV ---------- */
+function openScene(i){
+  if(!unlocked(i)) return;
+  curIdx = i; cur = SCENES[i];
+  $("home").classList.add("hidden");
+  $("allDone").classList.add("hidden");
+  $("player").classList.remove("hidden");
+  $("sceneTitle").textContent = "Zona " + cur.id + " · " + cur.name;
+  startExplore();
+}
+function goHome(){
+  $("player").classList.add("hidden");
+  $("allDone").classList.add("hidden");
+  $("home").classList.remove("hidden");
+  renderMap();
+}
+function renderMap(){
+  const map = $("map"); map.innerHTML="";
+  SCENES.forEach((s, i)=>{
+    const open = unlocked(i);
+    const rec = state.scenes[s.id];
+    const tile = document.createElement("div");
+    tile.className = "scene-tile" + (open ? "" : " locked");
+    tile.innerHTML =
+      '<div class="num">Zona '+s.id+'</div>'+
+      '<div class="nm">'+s.name+'</div>'+
+      '<div class="cnt">'+s.parts.length+' partes</div>'+
+      '<div class="stars">'+(rec&&rec.stars?("★".repeat(rec.stars)+"☆".repeat(3-rec.stars)):"")+'</div>'+
+      (open ? "" : '<div class="lockicon">🔒</div>');
+    if(open) tile.addEventListener("click", ()=> openScene(i));
+    map.appendChild(tile);
+  });
+}
+
+/* ---------- BUTTONS ---------- */
+$("toMatch").addEventListener("click", startMatch);
+$("backBtn").addEventListener("click", goHome);
+$("homeBtn").addEventListener("click", goHome);
+$("replayBtn").addEventListener("click", ()=> openScene(curIdx));
+$("nextBtn").addEventListener("click", ()=>{
+  const next = curIdx + 1;
+  if(next < SCENES.length){ openScene(next); }
+  else {
+    $("player").classList.add("hidden");
+    $("allDone").classList.remove("hidden");
+    $("finalScore").textContent = state.score + " puntos";
+  }
+});
+$("resetBtn").addEventListener("click", ()=>{
+  if(confirm("¿Borrar el progreso y los puntos?")){
+    state = {score:0, scenes:{}}; save(); setScore(0); goHome();
+  }
+});
+
+/* ---------- INIT ---------- */
+load();
+$("score").textContent = state.score;
+renderMap();
+</script>
+</body>
+</html>
